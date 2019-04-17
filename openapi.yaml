@@ -1,0 +1,454 @@
+openapi: 3.0.1
+info:
+  title: Summits
+  description: 'This is a sample project to evaluate technologies.'
+  contact:
+    email: frank.rittinger@virtual-identity.com
+  license:
+    name: MIT
+  version: 0.0.1
+externalDocs:
+  description: Find out more about Summits on github.
+  url: https://github.com/frittinger/summits
+tags:
+- name: summit
+  description: A mountain summit people like to ascent.
+- name: user
+  description: A person that likes to ascent mountains.
+- name: ascent
+  description: A person that likes to ascent mountains.
+paths:
+  /summit/findByHeight:
+    get:
+      tags:
+      - summit
+      summary: Finds summits by height
+      description: Summits can be searched for by height
+      operationId: findSummitsByHeight
+      parameters:
+      - name: height
+        in: query
+        description: The minimum or maximum height
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+      - name: rel
+        in: query
+        description: The relation to the height, either lower or higher
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          enum:
+          - higher
+          - lower
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Summit'
+        400:
+          description: Invalid status value
+          content: {}
+  /summit/findByCountry:
+    get:
+      tags:
+      - summit
+      summary: Find all summits of a country
+      description: Currently only the western Alps are supported, i.e. Switzerland, France, etc.
+      operationId: findSummitsByCountry
+      parameters:
+      - name: country
+        in: query
+        description: Countries to filter by
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Summit'
+        400:
+          description: Invalid country
+          content: {}
+  /summit/{summitId}:
+    get:
+      tags:
+      - summit
+      summary: Find pet by ID
+      description: Returns a single pet
+      operationId: getPetById
+      parameters:
+      - name: summitId
+        in: path
+        description: ID of the summit to return
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Summit'
+        400:
+          description: Invalid ID supplied
+          content: {}
+        404:
+          description: Summit not found
+          content: {}
+  /ascent:
+    post:
+      tags:
+      - ascent
+      summary: Create a new ascent entry
+      operationId: ascentEntry
+      requestBody:
+        description: A new ascent entry for a user
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/Ascent'
+        required: true
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ascent'
+        400:
+          description: Invalid Ascent
+          content: {}
+  /ascent/{ascentId}:
+    get:
+      tags:
+      - ascent
+      summary: Find ascent by ID
+      operationId: getAscentById
+      parameters:
+      - name: ascentId
+        in: path
+        description: ID of ascent that needs to be fetched
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ascent'
+        400:
+          description: Invalid ID supplied
+          content: {}
+        404:
+          description: Ascent not found
+          content: {}
+    delete:
+      tags:
+      - ascent
+      summary: Delete ascent by ID
+      operationId: deleteAscent
+      parameters:
+      - name: ascentId
+        in: path
+        description: ID of the ascent that needs to be deleted
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        400:
+          description: Invalid ID supplied
+          content: {}
+        404:
+          description: Ascent not found
+          content: {}
+  /ascent/findBySummit:
+    get:
+      tags:
+      - ascent
+      summary: Finds sascents by summits
+      description: Ascents can be searched by summits
+      operationId: findSAscentsBySummit
+      parameters:
+      - name: summitId
+        in: query
+        description: The summit ID the user wants all ascents for
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ascent'
+        400:
+          description: Invalid status value
+          content: {}
+  /ascent/findByUser:
+    get:
+      tags:
+      - ascent
+      summary: Finds sscents by users
+      description: Ascents can be searched by users
+      operationId: findSAscentsByUser
+      parameters:
+      - name: userId
+        in: query
+        description: The user ID
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ascent'
+        400:
+          description: Invalid status value
+          content: {}
+  /user:
+    post:
+      tags:
+      - user
+      summary: Create user
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      requestBody:
+        description: Created user object
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        default:
+          description: successful operation
+          content: {}
+  /user/login:
+    get:
+      tags:
+      - user
+      summary: Logs user into the system
+      operationId: loginUser
+      parameters:
+      - name: username
+        in: query
+        description: The user name for login
+        required: true
+        schema:
+          type: string
+      - name: password
+        in: query
+        description: The password for login in clear text
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/xml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+        400:
+          description: Invalid username/password supplied
+          content: {}
+  /user/{username}:
+    get:
+      tags:
+      - user
+      summary: Get user by user name
+      operationId: getUserByName
+      parameters:
+      - name: username
+        in: path
+        description: 'The name that needs to be fetched. Use user1 for testing. '
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: Invalid username supplied
+          content: {}
+        404:
+          description: User not found
+          content: {}
+    put:
+      tags:
+      - user
+      summary: Updated user
+      description: This can only be done by the logged in user.
+      operationId: updateUser
+      parameters:
+      - name: username
+        in: path
+        description: name that need to be updated
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Updated user object
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        400:
+          description: Invalid user supplied
+          content: {}
+        404:
+          description: User not found
+          content: {}
+    delete:
+      tags:
+      - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      parameters:
+      - name: username
+        in: path
+        description: The name that needs to be deleted
+        required: true
+        schema:
+          type: string
+      responses:
+        400:
+          description: Invalid username supplied
+          content: {}
+        404:
+          description: User not found
+          content: {}
+components:
+  schemas:
+    Ascent:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        summitId:
+          type: integer
+          format: int64
+        userId:
+          type: integer
+          format: int64
+        ascentDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          description: status of the ascent, i.e. success or had to abord
+          enum:
+          - success
+          - abord
+          - accident
+        ascentType:
+          type: string
+          description: type of the ascent, i.e. ski, snowshoe, hike, climb
+          enum:
+          - ski
+          - snowshoe
+          - hike
+          - climb
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        userStatus:
+          type: integer
+          description: User Status
+          format: int32
+    Summit:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: doggie
+        height:
+          type: integer
+          format: int32
+          example: 4482
+        country:
+          type: string
+          description: The country where this summit resides mostly
+          enum:
+          - Switzerland
+          - France
+          - Italy
+          - Austria
+          - Germany
