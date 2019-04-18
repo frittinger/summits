@@ -1,7 +1,8 @@
 openapi: 3.0.1
 info:
   title: Summits
-  description: 'This is a sample project to evaluate technologies.'
+  description: 'his project provides a domain and wrapper to evaluate backend technologies.
+  The domain is just a dummy domain which is coincidentally well known to the author ...'
   contact:
     email: frank.rittinger@virtual-identity.com
   license:
@@ -14,26 +15,27 @@ tags:
 - name: summit
   description: A mountain summit people like to ascent.
 - name: user
-  description: A person that likes to ascent mountains.
+  description: A person that likes to ascent mountains, i.e. a mountaineer. Since a user could also be an administrator we stick to the generasl term "user"
 - name: ascent
-  description: A person that likes to ascent mountains.
+  description: The combination of a mountaineer that tries to reach a mountain summit. Which will not always be successful ...
 paths:
   /summit/findByHeight:
     get:
       tags:
       - summit
-      summary: Finds summits by height
-      description: Summits can be searched for by height
+      summary: Finds summits by height.
+      description: Summits can be searched for by height. So either all mountains higher or lower then a given height.
       operationId: findSummitsByHeight
       parameters:
       - name: height
         in: query
-        description: The minimum or maximum height
+        description: The minimum or maximum height, currently in meters (could be made configurable in a later phase).
         required: true
         style: form
         explode: true
         schema:
           type: integer
+          format: int64
       - name: rel
         in: query
         description: The relation to the height, either lower or higher
@@ -61,7 +63,7 @@ paths:
     get:
       tags:
       - summit
-      summary: Find all summits of a country
+      summary: Find all summits of a country.
       description: Currently only the western Alps are supported, i.e. Switzerland, France, etc.
       operationId: findSummitsByCountry
       parameters:
@@ -89,9 +91,9 @@ paths:
     get:
       tags:
       - summit
-      summary: Find pet by ID
-      description: Returns a single pet
-      operationId: getPetById
+      summary: Find a summit by ID
+      description: Returns a single summit
+      operationId: getSummitById
       parameters:
       - name: summitId
         in: path
@@ -117,10 +119,10 @@ paths:
     post:
       tags:
       - ascent
-      summary: Create a new ascent entry
+      summary: Create a new ascent entry for a user (mountaineer) and a summit.
       operationId: ascentEntry
       requestBody:
-        description: A new ascent entry for a user
+        description: A new ascent entry for a user and a summit.
         content:
           '*/*':
             schema:
@@ -187,8 +189,8 @@ paths:
     get:
       tags:
       - ascent
-      summary: Finds sascents by summits
-      description: Ascents can be searched by summits
+      summary: Finds ascents of the given summit
+      description: Ascents can be searched by a summit
       operationId: findSAscentsBySummit
       parameters:
       - name: summitId
@@ -216,9 +218,9 @@ paths:
     get:
       tags:
       - ascent
-      summary: Finds sscents by users
-      description: Ascents can be searched by users
-      operationId: findSAscentsByUser
+      summary: Finds all ascents of a user
+      description: Ascents can be searched by users, not necessarily the currently logged in user
+      operationId: findAscentsByUser
       parameters:
       - name: userId
         in: query
@@ -245,8 +247,8 @@ paths:
     post:
       tags:
       - user
-      summary: Create user
-      description: This can only be done by the logged in user.
+      summary: Create a user
+      description: Used to create new users (i.e. mountaineers) in the system. This gives room for security aspects ...
       operationId: createUser
       requestBody:
         description: Created user object
@@ -293,9 +295,6 @@ paths:
                 type: string
                 format: date-time
           content:
-            application/xml:
-              schema:
-                type: string
             application/json:
               schema:
                 type: string
@@ -311,7 +310,7 @@ paths:
       parameters:
       - name: username
         in: path
-        description: 'The name that needs to be fetched. Use user1 for testing. '
+        description: The username of the user that should be fetched.
         required: true
         schema:
           type: string
@@ -319,9 +318,6 @@ paths:
         200:
           description: successful operation
           content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
@@ -395,16 +391,17 @@ components:
         ascentDate:
           type: string
           format: date-time
+          description: The date when the ascent was tried by a mountaineer.
         status:
           type: string
-          description: status of the ascent, i.e. success or had to abord
+          description: status of the ascent, i.e. success or abord
           enum:
           - success
           - abord
           - accident
-        ascentType:
+        tourType:
           type: string
-          description: type of the ascent, i.e. ski, snowshoe, hike, climb
+          description: type of tour for the the ascent, i.e. ski, snowshoe, hike, climb
           enum:
           - ski
           - snowshoe
@@ -427,9 +424,10 @@ components:
         password:
           type: string
         userStatus:
-          type: integer
-          description: User Status
-          format: int32
+          type: string
+          description: User Status which can be used for various aspects not yet defined ...
+          enum:
+            - approved
     Summit:
       type: object
       properties:
@@ -438,14 +436,15 @@ components:
           format: int64
         name:
           type: string
-          example: doggie
+          example: Matterhorn
         height:
           type: integer
           format: int32
+          description: The height of the summit, currently in meter above sea level
           example: 4482
         country:
           type: string
-          description: The country where this summit resides mostly
+          description: The country where this summit resides mostly; currently restricted to few countries of the western Alpes
           enum:
           - Switzerland
           - France
