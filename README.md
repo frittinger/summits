@@ -13,7 +13,7 @@ Our product consists of a database of summits with some basic information about 
 Mountaineers have a profile and can log in to the system. 
 Mountaineers can document their ascents and can query for summits and ascents of mountaineers (either their own or others).
 
-The details of the API and data model is described as an OpenAPI (Swagger) specification to eliminate duplication: ![openapi.yaml](./openapi.yaml)
+The details of the API and data model is described as an OpenAPI (Swagger) specification to eliminate duplication: ![openapi.yaml](openapi/openapi.yaml)
 
 # Ideas for further enhancements of the application
 - Mountaineers can become friends

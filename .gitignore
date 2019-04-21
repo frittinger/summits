@@ -23,3 +23,5 @@
 hs_err_pid*
 /summits.iml
 /.idea/
+node_modules
+/nodejs/summit-service-gen/
