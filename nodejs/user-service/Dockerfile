@@ -7,6 +7,6 @@ COPY src/ /usr/local/app/src
 
 USER node
 
-EXPOSE 3000
+EXPOSE 3002
 
 CMD ["npm", "start"]

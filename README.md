@@ -27,3 +27,14 @@ The details of the API and data model is described as an OpenAPI (Swagger) speci
 - Monitoring and Logging
 - add UI with maps and vue.js or react
 - Security vulnerability scanning and hardening
+
+# Building and running the application
+
+For each service:
+cd nodejs/summit-service
+docker build -t summit-service .
+docker run -d -p 3000:3000 --init summit-service
+
+- adapt the port mapping for each service
+- the "--init" is needed to handle unix signals correctly since node can't handle properly running as process 1
+  
