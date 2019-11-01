@@ -15,6 +15,11 @@ Mountaineers can document their ascents and can query for summits and ascents of
 
 The details of the API and data model is described as an OpenAPI (Swagger) specification to eliminate duplication: ![openapi.yaml](openapi/openapi.yaml)
 
+# Note on the repository layout
+I chose a monorepository to make it easier to check out the whole system and to keep everything together, since this most likely will not grow too big and will not be managed by different teams.
+
+TODO: move the services to top level and create language subfolders ...
+
 # Ideas for further enhancements of the application
 - Mountaineers can become friends
 - add SSO
@@ -30,11 +35,10 @@ The details of the API and data model is described as an OpenAPI (Swagger) speci
 
 # Building and running the application
 
-For each service:
-cd nodejs/summit-service
-docker build -t summit-service .
-docker run -d -p 3000:3000 --init summit-service
+For each service (adapt the port mapping for each service):
+1. cd nodejs/summit-service
+2. docker build -t summit-service .
+3. docker run -d -p 3000:3000 --init summit-service
 
-- adapt the port mapping for each service
 - the "--init" is needed to handle unix signals correctly since node can't handle properly running as process 1
   
