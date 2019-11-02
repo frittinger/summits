@@ -19,6 +19,7 @@
     <modules>
         <module>summit-service/java</module>
         <module>user-service/java</module>
+        <module>ascent-service/java</module>
     </modules>
 
 </project>
