@@ -42,3 +42,9 @@ For each service (adapt the port mapping for each service):
 
 - the "--init" is needed to handle unix signals correctly since node can't handle properly running as process 1
   
+## Kafka
+To use Kafka it is easiest to get appropriate Docker images from https://github.com/wurstmeister/kafka-docker.git
+
+This creates a zookeeper and kafka docker image and runs them in docker-compose.
+
+The value for the following property must be changed to IP address of the local computer (not localhost or 127.0.0.1): kafka.bootstrapAddress
