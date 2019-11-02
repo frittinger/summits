@@ -11,7 +11,7 @@ public class UserController {
     @GetMapping("/user")
     @ResponseBody
     public User user() {
-        return new User("Frank", 0);
+        return null;
     }
 
 }
