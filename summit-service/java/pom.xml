@@ -17,7 +17,7 @@
 	<description>Summit service for the Summits project</description>
 
 	<properties>
-		<docker.image.prefix>springio</docker.image.prefix>
+		<docker.image.prefix>summits</docker.image.prefix>
 		<java.version>11</java.version>
 	</properties>
 

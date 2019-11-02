@@ -18,6 +18,7 @@
 
     <modules>
         <module>summit-service/java</module>
+        <module>user-service/java</module>
     </modules>
 
 </project>
