@@ -1,8 +1,7 @@
 openapi: 3.0.1
 info:
   title: Summits
-  description: 'This project provides a domain and wrapper to evaluate backend technologies.
-  The domain is just a dummy domain which is coincidentally well known to the author ...'
+  description: 'This project provides a domain and wrapper to evaluate backend technologies. The domain is just a dummy domain which is coincidentally well known to the author ...'
   contact:
     email: frank.rittinger@virtual-identity.com
   license:
