@@ -21,6 +21,7 @@ I chose a monorepository to make it easier to check out the whole system and to 
 TODO: move the services to top level and create language subfolders ...
 
 # Ideas for further enhancements of the application
+- Add centralized logging for production but also local for development ...
 - Mountaineers can become friends
 - add SSO
 - add GraphQL API
