@@ -1,0 +1,7 @@
+/node_modules
+/out
+/coverage
+/data
+/mongodb-macos-x86_64-4.4.1
+package-lock.json
+tsconfig.json
