@@ -1,0 +1,91 @@
+import { E_METHOD } from "./generateRoutes";
+import { Request, Response } from "express";
+import { sendPostRequest, sendGetRequest } from "../../../common/requestHelper";
+import { responseFromDatabase } from "../../../common/requestHelper";
+
+export interface Route {
+  callback: Function;
+  method: E_METHOD;
+  endPoint: string;
+}
+
+function checkJson(jsonObject: any) {
+  return jsonObject.name;
+}
+
+export let routes: Route[] = [
+  {
+    callback: (req: Request, res: Response) => {
+      const aboutInfo = {
+        name: process.env.NAME,
+        version: process.env.VERSION,
+      };
+
+      res.status(200).json(aboutInfo);
+    },
+    method: E_METHOD.GET,
+    endPoint: "/about",
+  },
+  {
+    callback: (req: Request, res: Response) => {
+      if (checkJson(req.body)) {
+        sendPostRequest(
+          "createUser",
+          req.body,
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res.status(400).send("The Json Object did not have the correct fields");
+      }
+    },
+    method: E_METHOD.POST,
+    endPoint: "/createUser",
+  },
+  {
+    callback: (req: Request, res: Response) => {
+      if (req.params.userId && !isNaN(+req.params.userId)) {
+        sendGetRequest(
+          `getUser?search=userId&value=${req.params.userId}`,
+          "GET",
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res
+          .status(400)
+          .send(
+            "The path did not have the correct field or was not an integer"
+          );
+      }
+    },
+    method: E_METHOD.GET,
+    endPoint: "/getUser/:userId",
+  },
+  {
+    callback: (req: Request, res: Response) => {
+      if (req.params.userId && !isNaN(+req.params.userId)) {
+        sendGetRequest(
+          `deleteUser?search=userId&value=${req.params.userId}`,
+          "DELETE",
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res
+          .status(400)
+          .send(
+            "The path did not have the correct field or was not an integer"
+          );
+      }
+    },
+    method: E_METHOD.DELETE,
+    endPoint: "/deleteUser/:userId",
+  },
+];
