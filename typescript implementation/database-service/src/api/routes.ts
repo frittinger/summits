@@ -1,143 +1,208 @@
-import { E_METHOD } from './generateRoutes';
-import { Mongodb } from '../database/mongodb'
+import { E_METHOD } from "./generateRoutes";
+import { Mongodb } from "../database/mongodb";
 import { Request, Response } from "express";
-import {getNextID} from "../logic/generateValues"
-import { searchInSummit, deleteInSummit} from "../database/databaseOperation"
-import {sendResponse} from "../logic/sendResponse";
+import { getNextID } from "../logic/generateValues";
+import { searchInSummit, deleteInSummit } from "../database/databaseOperation";
+import { sendResponse } from "../logic/sendResponse";
 
-export interface Route{
-    callback: Function;
-    method: E_METHOD;
-    endPoint: string;
+export interface Route {
+  callback: Function;
+  method: E_METHOD;
+  endPoint: string;
 }
 
-export let routes: Route[] = [];
-
-let createAscent: Route = {
-
+export let routes: Route[] = [
+  {
     callback: async (req: Request, res: Response) => {
+      let result = await searchInSummit(
+        "userId",
+        req.body.userId,
+        "user",
+        "summit",
+        true
+      );
 
-        let result = await searchInSummit("userId", req.body.userId, "user", "summit" ,true);
+      if (result.length != 0) {
+        let ascents = await searchInSummit("", 0, "ascent", "summit", false);
 
-        if(result.length != 0)
-        {
-            let ascents = await searchInSummit("", 0, "ascent", "summit", false);
+        req.body["Id"] = getNextID(ascents, "Id");
+        let insertCount = await (
+          await Mongodb.client
+            .db("summit")
+            .collection("ascent")
+            .insertOne(req.body)
+        ).insertedCount;
 
-            req.body["Id"] = getNextID(ascents,"Id");
-            let insertCount = await (await Mongodb.client.db("summit").collection("ascent").insertOne(req.body)).insertedCount;
-            
-            sendResponse(res, insertCount == 1, `Ascent mit der ID ${req.body["Id"]} wurde Erfolgreich hinzugefügt`,
-                "Es gab ein Fehler beim hinzufügen des Aufstiegs");         
-        }
-        else 
-        {
-            res.status(400).send("Es gibt kein User mit dieser ID");
-        }
-        
+        let returnOnSucess = {
+          message: "Ascent was successfully added",
+          ascentId: +req.body["Id"],
+        };
+
+        sendResponse(
+          res,
+          insertCount == 1,
+          JSON.stringify(returnOnSucess),
+          "There was an error when adding the ascent"
+        );
+      } else {
+        res.status(400).send("There is no user with this ID");
+      }
     },
     method: E_METHOD.POST,
-    endPoint: "/createAscent"
-}
-
-let createUser: Route = {
-
+    endPoint: "/createAscent",
+  },
+  {
     callback: async (req: Request, res: Response) => {
+      let result = await searchInSummit(
+        "name",
+        req.body.name,
+        "user",
+        "summit",
+        true
+      );
 
-        let result = await searchInSummit("name", req.body.name, "user", "summit", true);
+      if (result.length == 0) {
+        let users = await searchInSummit("", 0, "user", "summit", false);
 
-        if (result.length == 0) {
+        req.body["userId"] = getNextID(users, "userId");
 
-            let users = await searchInSummit("", 0, "user", "summit", false)
+        let insertCount = await (
+          await Mongodb.client
+            .db("summit")
+            .collection("user")
+            .insertOne(req.body)
+        ).insertedCount;
 
-            req.body["userId"] = getNextID(users,"userId");
-
-            let insertCount = await (await Mongodb.client.db("summit").collection("user").insertOne(req.body)).insertedCount;
-            
-            sendResponse(res, insertCount == 1, `User mit der ID ${req.body["userId"]} wurde Erfolgreich hinzugefügt`,
-                "Es gab ein Fehler beim hinzufügen des Users");
-        }
-        else {
-            res.status(400).send(`Es gibt den User ${req.body.name} schon `);
-        }
+        let returnOnSucess = {
+          message: "User was successfully added",
+          userId: +req.body["userId"],
+        };
+        sendResponse(
+          res,
+          insertCount == 1,
+          JSON.stringify(returnOnSucess),
+          "There was an error when adding the user"
+        );
+      } else {
+        res.status(406).send(`The user ${req.body.name} already exists `);
+      }
     },
     method: E_METHOD.POST,
-    endPoint: "/createUser"
-}
-
-let getAscent: Route = {
-
+    endPoint: "/createUser",
+  },
+  {
     callback: async (req: Request, res: Response) => {
-        
-        if (req.query.search && req.query.value)
-        {
-            let ascent = await searchInSummit(req.query.search.toString(), +req.query.value.toString(), "ascent", "summit", true);
+      if (req.query.search && req.query.value) {
+        let ascent = await searchInSummit(
+          req.query.search.toString(),
+          +req.query.value.toString(),
+          "ascent",
+          "summit",
+          true
+        );
 
-            sendResponse(res, ascent.length >= 1, JSON.stringify(ascent), `Ascent mit der ${req.query.search} ${req.query.value} konnte nicht gefunden werden`);
-        }  
-        else
-        {
-            res.status(400).send("Die Anfrage hatte nicht die richtigen Queryparams");
-        }
+        ascent.forEach((a) => {
+          delete a["_id"];
+        });
+
+        sendResponse(
+          res,
+          ascent.length >= 1,
+          JSON.stringify(ascent),
+          `Ascent with the ${req.query.search} ${req.query.value} could not be found`
+        );
+      } else {
+        res.status(400).send("The query did not have the correct query params");
+      }
     },
     method: E_METHOD.GET,
-    endPoint: "/getAscent"
-}
-let deleteAscent: Route = {
-
+    endPoint: "/getAscent",
+  },
+  {
     callback: async (req: Request, res: Response) => {
+      if (req.query.search && req.query.value) {
+        let countDeletet = await deleteInSummit(
+          req.query.search.toString(),
+          +req.query.value.toString(),
+          "ascent",
+          false
+        );
 
-        if (req.query.search && req.query.value) {
+        let returnOnSucess = {
+          message: "Ascent successfully deleted",
+          ascentId: +req.query.value,
+        };
 
-            let countDeletet = await deleteInSummit(req.query.search.toString(), +req.query.value.toString(), "ascent",false);
-
-            sendResponse(res, countDeletet == 1, `Ascent mit der ID ${req.query.value} erfolgreich gelöscht`,
-                `Ascent mit der ID ${ req.query.value } konnte nicht  gelöscht(gibt es dieses Ascent ?)`);
-        }
-        else {
-            res.status(400).send("Die Anfrage hatte nicht die richtigen Queryparams");
-        }
+        sendResponse(
+          res,
+          countDeletet == 1,
+          JSON.stringify(returnOnSucess),
+          `Ascent with the ID ${req.query.value} could not be deleted(is there this Ascent ?)`
+        );
+      } else {
+        res.status(400).send("The query did not have the correct query params");
+      }
     },
     method: E_METHOD.DELETE,
-    endPoint: "/deleteAscent"
-}
-let deleteUser: Route = {
-
+    endPoint: "/deleteAscent",
+  },
+  {
     callback: async (req: Request, res: Response) => {
+      if (req.query.search && req.query.value) {
+        let countDeletet = await deleteInSummit(
+          req.query.search.toString(),
+          +req.query.value.toString(),
+          "user",
+          false
+        );
 
-        if (req.query.search && req.query.value) {
+        await deleteInSummit(
+          "userId",
+          +req.query.value.toString(),
+          "ascent",
+          true
+        );
 
-            let countDeletet = await deleteInSummit(req.query.search.toString(), +req.query.value.toString(), "user",false);
+        let returnOnSucess = {
+          message: "User successfully deleted",
+          userId: +req.query.value,
+        };
 
-            await deleteInSummit("userId", +req.query.value.toString(),"ascent",true);
-
-            sendResponse(res, countDeletet == 1, `User mit der ID ${req.query.value} erfolgreich gelöscht`,
-                `Ascent mit der ID ${req.query.value} konnte nicht  gelöscht (gibt es dieses User ?)`);
-        }
-        else {
-            res.status(400).send("Die Anfrage hatte nicht die richtigen Queryparams");
-        }
+        sendResponse(
+          res,
+          countDeletet == 1,
+          JSON.stringify(returnOnSucess),
+          `User with ID ${req.query.value} could not be deleted (is there this user ?)`
+        );
+      }
     },
     method: E_METHOD.DELETE,
-    endPoint: "/deleteUser"
-}
-let getUser: Route = {
-
+    endPoint: "/deleteUser",
+  },
+  {
     callback: async (req: Request, res: Response) => {
+      if (req.query.search && req.query.value) {
+        let user = await searchInSummit(
+          req.query.search.toString(),
+          +req.query.value.toString(),
+          "user",
+          "summit",
+          true
+        );
 
-        if (req.query.search && req.query.value) {
+        user.forEach((u) => {
+          delete u["_id"];
+        });
 
-            let user = await searchInSummit(req.query.search.toString(), +req.query.value.toString(), "user", "summit", true);
-
-            sendResponse(res, user.length >= 1, JSON.stringify(user), `User mit der ${req.query.search} ${req.query.value} konnte nicht gefunden werden`);
-        }
+        sendResponse(
+          res,
+          user.length >= 1,
+          JSON.stringify(user[0]),
+          `User with ${req.query.search} ${req.query.value} could not be found`
+        );
+      }
     },
     method: E_METHOD.GET,
-    endPoint: "/getUser"
-}
-
-routes.push(getAscent);
-routes.push(deleteAscent);
-routes.push(createAscent);
-routes.push(createUser);
-routes.push(deleteUser);
-routes.push(getUser);
+    endPoint: "/getUser",
+  },
+];

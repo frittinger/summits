@@ -1,87 +1,91 @@
-import { E_METHOD } from './generateRoutes';
-const properties = require('../../package.json');
+import { E_METHOD } from "./generateRoutes";
 import { Request, Response } from "express";
-import {sendPostRequest,sendGetRequest} from '../requestHelper';
-import {responseFromDatabase} from '../requestHelper';
+import { sendPostRequest, sendGetRequest } from "../../../common/requestHelper";
+import { responseFromDatabase } from "../../../common/requestHelper";
 
-export interface Route{
-    callback: Function;
-    method: E_METHOD;
-    endPoint: string;
+export interface Route {
+  callback: Function;
+  method: E_METHOD;
+  endPoint: string;
 }
 
-function checkJson(jsonObject: any){
-
-    return jsonObject.name;
+function checkJson(jsonObject: any) {
+  return jsonObject.name;
 }
 
-export let routes: Route[] = [];
-
-let routeAbout: Route = {
-
+export let routes: Route[] = [
+  {
     callback: (req: Request, res: Response) => {
-        const aboutInfo = {
-            name: properties.name,
-            version: properties.version
-        }
+      const aboutInfo = {
+        name: process.env.NAME,
+        version: process.env.VERSION,
+      };
 
-        res.status(200).json(aboutInfo);
+      res.status(200).json(aboutInfo);
     },
     method: E_METHOD.GET,
-    endPoint: "/about"
-}
-let createUser: Route = {
-
+    endPoint: "/about",
+  },
+  {
     callback: (req: Request, res: Response) => {
-        if(checkJson(req.body))
-        {
-            sendPostRequest("createUser", req.body, (responseObject:responseFromDatabase) => {
-
-                res.status(responseObject.code).send(responseObject.message);
-            });
-        }
-        else{
-
-            res.status(400).send("Das Json Object hatte nicht die richtigen Felder");
-        }
+      if (checkJson(req.body)) {
+        sendPostRequest(
+          "createUser",
+          req.body,
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res.status(400).send("The Json Object did not have the correct fields");
+      }
     },
     method: E_METHOD.POST,
-    endPoint: "/createUser"
-}
-let getUserById: Route = {
-
+    endPoint: "/createUser",
+  },
+  {
     callback: (req: Request, res: Response) => {
-        if (req.params.userId)
-        {
-            sendGetRequest(`getUser?search=userId&value=${req.params.userId}`, "GET", (responseObject: responseFromDatabase) => {
-                res.status(responseObject.code).send(responseObject.message);
-            });  
-        }
-        else{
-
-            res.status(400).send("Das Json Object hatte nicht die richtigen Felder");
-        } 
+      if (req.params.userId && !isNaN(+req.params.userId)) {
+        sendGetRequest(
+          `getUser?search=userId&value=${req.params.userId}`,
+          "GET",
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res
+          .status(400)
+          .send(
+            "The path did not have the correct field or was not an integer"
+          );
+      }
     },
     method: E_METHOD.GET,
-    endPoint: "/getUser/:userId"
-}
-let deleteUserById: Route = {
-
+    endPoint: "/getUser/:userId",
+  },
+  {
     callback: (req: Request, res: Response) => {
-        if (req.params.userId) {
-            sendGetRequest(`deleteUser?search=userId&value=${req.params.userId}`, "DELETE", (responseObject: responseFromDatabase) => {
-                res.status(responseObject.code).send(responseObject.message);
-            });
-        }
-        else {
-            res.status(400).send("Das Json Object hatte nicht die richtigen Felder");
-        } 
+      if (req.params.userId && !isNaN(+req.params.userId)) {
+        sendGetRequest(
+          `deleteUser?search=userId&value=${req.params.userId}`,
+          "DELETE",
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res
+          .status(400)
+          .send(
+            "The path did not have the correct field or was not an integer"
+          );
+      }
     },
     method: E_METHOD.DELETE,
-    endPoint: "/deleteUser/:userId"
-}
-
-routes.push(getUserById);
-routes.push(deleteUserById);
-routes.push(createUser);
-routes.push(routeAbout);
+    endPoint: "/deleteUser/:userId",
+  },
+];

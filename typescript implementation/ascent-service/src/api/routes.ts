@@ -1,140 +1,140 @@
-import { E_METHOD } from './generateRoutes';
-const properties = require('../../package.json');
+import { E_METHOD } from "./generateRoutes";
 import { Request, Response } from "express";
-import {sendPostRequest,sendGetRequest} from '../requestHelper';
-import {responseFromDatabase} from '../requestHelper';
+import { sendPostRequest, sendGetRequest } from "../../../common/requestHelper";
+import { responseFromDatabase } from "../../../common/requestHelper";
 
-const ascentSki = {
-    id: 1,
-    summitId: 2,
-    userId: 2,
-    ascentDate: "2019-04-01",
-    status: "success",
-    tourType: "ski"
-}
-const ascentHike = {
-    id: 1,
-    summitId: 1,
-    userId: 2,
-    ascentDate: "2019-08-01",
-    status: "success",
-    tourType: "hike"
+export interface Route {
+  callback: Function;
+  method: E_METHOD;
+  endPoint: string;
 }
 
-export interface Route{
-    callback: Function;
-    method: E_METHOD;
-    endPoint: string;
-}
+const checkJson = (jsonObject: any) => {
+  return (
+    jsonObject.summitId &&
+    jsonObject.userId &&
+    jsonObject.ascentDate &&
+    jsonObject.status &&
+    jsonObject.tourType
+  );
+};
 
-function checkJson(jsonObject: any){
-
-    return jsonObject.summitId && jsonObject.userId && jsonObject.ascentDate && jsonObject.status && jsonObject.tourType;
-
-}
-
-export let routes: Route[] = [];
-
-let routeAbout: Route = {
-
+export let routes: Route[] = [
+  {
     callback: (req: Request, res: Response) => {
-        const aboutInfo = {
-            name: properties.name,
-            version: properties.version
-        }
-        res.status(200).json(aboutInfo);
+      const aboutInfo = {
+        name: process.env.NAME,
+        version: process.env.VERSION,
+      };
+      res.status(200).json(aboutInfo);
     },
     method: E_METHOD.GET,
-    endPoint: "/about"
-}
-let createAscent: Route = {
-
+    endPoint: "/about",
+  },
+  {
     callback: (req: Request, res: Response) => {
-        if(checkJson(req.body))
-        {
-            sendPostRequest("createAscent", req.body, (responseObject:responseFromDatabase) => {
-
-                res.status(responseObject.code).send(responseObject.message);
-            });
-        }
-        else{
-
-            res.status(400).send("Das Json Object hatte nicht die richtigen Felder");
-        }
+      if (checkJson(req.body)) {
+        sendPostRequest(
+          "createAscent",
+          req.body,
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res.status(400).send("The Json Object did not have the correct fields");
+      }
     },
     method: E_METHOD.POST,
-    endPoint: "/createAscent"
-}
-let getAscentById: Route = {
-
+    endPoint: "/createAscent",
+  },
+  {
     callback: (req: Request, res: Response) => {
-        if (req.params.ascentId)
-        {
-            sendGetRequest(`getAscent?search=Id&value=${req.params.ascentId}`, "GET", (responseObject: responseFromDatabase) => {
-                res.status(responseObject.code).send(responseObject.message);
-            });  
-        }
-        else{
-
-            res.status(400).send("Das Json Object hatte nicht die richtigen Felder");
-        } 
+      if (req.params.ascentId && !isNaN(+req.params.ascentId)) {
+        sendGetRequest(
+          `getAscent?search=Id&value=${req.params.ascentId}`,
+          "GET",
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res
+          .status(400)
+          .send(
+            "The path did not have the correct field or was not an integer"
+          );
+      }
     },
     method: E_METHOD.GET,
-    endPoint: "/getAscent/:ascentId"
-}
-let deleteAscentById: Route = {
-
+    endPoint: "/getAscent/:ascentId",
+  },
+  {
     callback: (req: Request, res: Response) => {
-        if (req.params.ascentId) {
-            sendGetRequest(`deleteAscent?search=Id&value=${req.params.ascentId}`, "DELETE", (responseObject: responseFromDatabase) => {
-                res.status(responseObject.code).send(responseObject.message);
-            });
-        }
-        else {
-            res.status(400).send("Das Json Object hatte nicht die richtigen Felder");
-        } 
+      if (req.params.ascentId && !isNaN(+req.params.ascentId)) {
+        sendGetRequest(
+          `deleteAscent?search=Id&value=${req.params.ascentId}`,
+          "DELETE",
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res
+          .status(400)
+          .send(
+            "The path did not have the correct field or was not an integer"
+          );
+      }
     },
     method: E_METHOD.DELETE,
-    endPoint: "/deleteAscent/:ascentId"
-}
-let getAscentsBySummitId: Route = {
-
+    endPoint: "/deleteAscent/:ascentId",
+  },
+  {
     callback: async (req: Request, res: Response) => {
-
-        if (req.params.summitId) {
-            
-            sendGetRequest(`getAscent?search=summitId&value=${req.params.summitId}`, "GET", (responseObject: responseFromDatabase) => {
-                res.status(responseObject.code).send(responseObject.message);
-            });  
-        }
-        else {
-
-            res.status(400).send("Das Json Object hatte nicht die richtigen Felder");
-        }  
+      if (req.params.summitId && !isNaN(+req.params.summitId)) {
+        sendGetRequest(
+          `getAscent?search=summitId&value=${req.params.summitId}`,
+          "GET",
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res
+          .status(400)
+          .send(
+            "The path did not have the correct field or was not an integer"
+          );
+      }
     },
     method: E_METHOD.GET,
-    endPoint: "/getAscentsBySummit/:summitId"
-}
-let getAscentsByUserId: Route = {
-
+    endPoint: "/getAscentsBySummit/:summitId",
+  },
+  {
     callback: async (req: Request, res: Response) => {
-        
-        if (req.params.userId) {
-            sendGetRequest(`getAscent?search=userId&value=${req.params.userId}`,"GET", (responseObject: responseFromDatabase) => {
-                res.status(responseObject.code).send(responseObject.message);
-            });
-        }
-        else {
-
-            res.status(400).send("Das Json Object hatte nicht die richtigen Felder");
-        } 
+      if (req.params.userId && !isNaN(+req.params.userId)) {
+        sendGetRequest(
+          `getAscent?search=userId&value=${req.params.userId}`,
+          "GET",
+          async (responseObject: responseFromDatabase) => {
+            let statusText = await responseObject.text();
+            res.status(responseObject.status).send(statusText);
+          }
+        );
+      } else {
+        res
+          .status(400)
+          .send(
+            "The path did not have the correct field or was not an integer"
+          );
+      }
     },
     method: E_METHOD.GET,
-    endPoint: "/getAscentsByUser/:userId"
-}
-routes.push(getAscentsByUserId);
-routes.push(getAscentsBySummitId);
-routes.push(getAscentById);
-routes.push(deleteAscentById);
-routes.push(createAscent);
-routes.push(routeAbout);
+    endPoint: "/getAscentsByUser/:userId",
+  },
+];
